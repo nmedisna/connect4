@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="cyber">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connect Four | Умная игра Четыре в Ряд с ИИ-Анализом</title>
+    <meta name="description" content="Современная интерактивная игра Четыре в Ряд с уникальным встроенным локальным ИИ-тренером (AI Coach) для подробного разбора вашей игровой стратегии.">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- ШАПКА САЙТА -->
+    <header>
+        <div class="logo">
+            <div class="logo-icon"></div>
+            <h1>Connect Four <span style="font-weight: 300; font-size: 16px; opacity: 0.8;">with AI Coach</span></h1>
+        </div>
+        
+        <div class="controls">
+            <!-- Переключатель звука -->
+            <button id="soundToggleBtn" class="btn-icon" title="Выключить звук">
+                <svg class="icon-sound-on" viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                    <path d="M14,3.23V5.29C16.89,6.15 19,8.83 19,12C19,15.17 16.89,17.85 14,18.71V20.77C18,19.86 21,16.28 21,12C21,7.72 18,4.14 14,3.23M16.5,12C16.5,10.23 15.5,8.71 14,7.97V16C15.5,15.29 16.5,13.77 16.5,12M3,9V15H7L12,20V4L7,9H3Z"/>
+                </svg>
+                <svg class="icon-sound-off" viewBox="0 0 24 24" width="20" height="20" fill="currentColor" style="display: none;">
+                    <path d="M12,4L9.91,6.09L12,8.18V4M4.27,3L3,4.27L7.73,9H3V15H7L12,20V13.27L16.25,17.53C15.58,18.04 14.83,18.46 14,18.7V20.77C15.38,20.44 16.63,19.79 17.7,18.9L20.73,21.93L22,20.66L4.27,3M19,12C19,12.78 18.87,13.5 18.62,14.18L20.17,15.73C20.69,14.6 21,13.34 21,12C21,7.72 18,4.14 14,3.23V5.29C16.89,6.15 19,8.83 19,12M16.5,12A2.5,2.5 0 0,0 14,9.5V11.23L16.29,13.52C16.42,13.04 16.5,12.53 16.5,12Z"/>
+                </svg>
+            </button>
+
+            <!-- Селектор тем оформления -->
+            <div class="theme-selector">
+                <button class="theme-btn" data-theme="light" title="Светлая тема">Light</button>
+                <button class="theme-btn" data-theme="dark" title="Тёмная тема">Dark</button>
+                <button class="theme-btn active" data-theme="cyber" title="Неоновая тема Cyber">Cyber</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- ОСНОВНОЙ КОНТЕНТ -->
+    <main>
+        
+        <!-- ЛЕВАЯ КОЛОНКА: СТАТИСТИКА И ПРАВИЛА -->
+        <section class="sidebar sidebar-left">
+            <!-- PRO УЛУЧШЕНИЕ -->
+            <div id="proPanel" class="glass-panel pro-panel" style="background: linear-gradient(135deg, var(--card-bg), rgba(255, 215, 0, 0.04)); border-color: rgba(255, 215, 0, 0.15); margin-bottom: 2px;">
+                <button id="proUpgradeBtn" class="btn btn-primary" style="background: linear-gradient(135deg, #ffd700, #ffaa00); color: #000000; box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3); border: none; font-weight: 800; width: 100%;">
+                    👑 Upgrade to Pro
+                </button>
+                <p style="font-size: 11px; text-align: center; color: var(--text-secondary); margin-top: 8px; line-height: 1.4; margin-bottom: 0;">
+                    Откройте ИИ-подсказки в реальном времени и станьте непобедимым!
+                </p>
+            </div>
+
+            <div class="glass-panel">
+                <h2 class="panel-title">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                        <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/>
+                    </svg>
+                    Статистика игр
+                </h2>
+                <div class="stats-list">
+                    <div class="stat-item">
+                        <span class="stat-label">Игрок 1 (Красные побед)</span>
+                        <span class="stat-value" id="p1WinsVal" style="color: var(--chip-p1);">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Игрок 2 (Желтые побед)</span>
+                        <span class="stat-value" id="p2WinsVal" style="color: var(--chip-p2);">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Ничьи</span>
+                        <span class="stat-value" id="drawsVal">0</span>
+                    </div>
+                    <div class="stat-item" style="border-top: 2px dashed var(--card-border); margin-top: 8px; padding-top: 12px;">
+                        <span class="stat-label" style="font-weight: 700;">Всего сыграно</span>
+                        <span class="stat-value" id="totalGamesVal" style="font-weight: 800;">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-panel" style="flex: 1;">
+                <h2 class="panel-title">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+                    </svg>
+                    Правила игры
+                </h2>
+                <p style="font-size: 13px; line-height: 1.6; color: var(--text-secondary);">
+                    Игроки по очереди опускают фишки своего цвета в столбцы вертикальной решетки. 
+                    Фишка падает в самую нижнюю свободную ячейку выбранного столбца (гравитация).
+                    <br><br>
+                    <strong>Цель:</strong> первому выстроить линию из <strong>4 фишек</strong> своего цвета по горизонтали, вертикали или диагонали.
+                    <br><br>
+                    <strong>ИИ-Коуч:</strong> После окончания игры нажмите кнопку <strong>"Анализ партии"</strong>. Локальный алгоритм проанализирует ваши ходы, укажет на тактические ошибки и определит ваш стиль игры!
+                </p>
+            </div>
+        </section>
+
+        <!-- ЦЕНТРАЛЬНАЯ КОЛОНКА: ИГРОВОЕ ПОЛЕ -->
+        <section class="game-arena">
+            
+            <!-- Табло текущего хода -->
+            <div class="scoreboard">
+                <div id="p1Card" class="player-card active">
+                    <div class="player-indicator p1"></div>
+                    <div class="player-info">
+                        <span class="player-name">Игрок 1</span>
+                        <span class="player-status">Твой ход</span>
+                    </div>
+                </div>
+                <div id="p2Card" class="player-card">
+                    <div class="player-indicator p2"></div>
+                    <div class="player-info">
+                        <span class="player-name">Игрок 2</span>
+                        <span class="player-status">Ожидание</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Сама доска Connect 4 -->
+            <div class="board-container">
+                <!-- Призрачные фишки наведения -->
+                <div id="hoverPreview" class="hover-preview-container"></div>
+                
+                <!-- Подсветка колонки при наведении -->
+                <div id="columnHighlight" class="column-highlight"></div>
+                
+                <!-- Падающие фишки (под маской) -->
+                <div id="chipsContainer" class="chips-container"></div>
+                
+                <!-- Сетка ячеек маски доски (поверх фишек) -->
+                <div id="boardGrid" class="board-grid"></div>
+
+                <!-- Экран выбора режима игры (поверх поля) -->
+                <div id="modeOverlay" class="result-screen visible">
+                    <div class="result-banner">Connect Four</div>
+                    <p class="result-subtitle">Выберите режим игры, чтобы начать сражение:</p>
+                    
+                    <div class="result-buttons" style="flex-direction: column; max-width: 320px; gap: 12px; margin-top: 10px;">
+                        <button id="modePvPBtn" class="btn btn-primary" style="width: 100%;">
+                            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" style="margin-right: 8px;">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+                            </svg>
+                            Игрок против Игрока (PvP)
+                        </button>
+                        
+                        <button id="modePvAIBtn" class="btn btn-secondary" style="width: 100%;">
+                            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" style="margin-right: 8px;">
+                                <path d="M20,2H4C2.9,2,2,2.9,2,4v12c0,1.1,0.9,2,2,2h4v3h8v-3h4c1.1,0,2-0.9,2-2V4C22,2.9,21.1,2,20,2z M20,16H4V4h16V16z M9,6h2v4H9V6z M13,6h2v2h-2V6z M13,9h2v1h-2V9z"/>
+                            </svg>
+                            Против Компьютера (vs AI)
+                        </button>
+                    </div>
+
+                    <!-- Выбор сложности ИИ -->
+                    <div id="difficultySection" style="display: none; flex-direction: column; align-items: center; gap: 12px; margin-top: 16px; width: 100%; max-width: 320px;">
+                        <p class="result-subtitle" style="font-size: 14px; margin-bottom: 0;">Сложность ИИ:</p>
+                        <div style="display: flex; gap: 8px; width: 100%;">
+                            <button class="btn btn-secondary diff-btn" data-diff="easy" style="padding: 10px; font-size: 13px;">Легкий</button>
+                            <button class="btn btn-secondary diff-btn active" data-diff="medium" style="padding: 10px; font-size: 13px;">Средний</button>
+                            <button class="btn btn-secondary diff-btn" data-diff="hard" style="padding: 10px; font-size: 13px;">Сложный</button>
+                        </div>
+                        <button id="startAIPlayBtn" class="btn btn-primary" style="width: 100%; margin-top: 6px;">
+                            Начать игру
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Экран завершения игры (поверх поля) -->
+                <div id="resultScreen" class="result-screen">
+                    <div id="resultBanner" class="result-banner">Победа!</div>
+                    <p id="resultSubtitle" class="result-subtitle">Поздравляем игрока с победой! Посмотрите разбор коуча.</p>
+                    <div class="result-buttons">
+                        <button id="restartResultBtn" class="btn btn-primary">
+                            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                                <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+                            </svg>
+                            Заново
+                        </button>
+                        <button id="analyzeResultBtn" class="btn btn-secondary">
+                            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                                <path d="M12 2C6.5 2 2 6.5 2 12S6.5 22 12 22 22 17.5 22 12 17.5 2 12 2M12 4C14 4 15.6 5.6 15.6 7.6S14 11.2 12 11.2 8.4 9.6 8.4 7.6 10 4 12 4M12 20C9.3 20 6.9 18.6 5.6 16.4C5.6 14.3 9.9 13.1 12 13.1S18.4 14.3 18.4 16.4C17.1 18.6 14.7 20 12 20Z"/>
+                            </svg>
+                            Анализ партии
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Действия -->
+            <div class="game-actions">
+                <button id="restartBtn" class="btn btn-secondary">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                        <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+                    </svg>
+                    Перезапуск
+                </button>
+                
+                <button id="aiHintBtn" class="btn btn-secondary" style="border-color: rgba(255, 215, 0, 0.2); transition: all 0.3s ease;">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" style="margin-right: 6px;">
+                        <path d="M12 2C7.58 2 4 5.58 4 10C4 12.68 5.3 15.05 7.3 16.5C8.04 17.06 8.5 17.85 8.5 18.5V20C8.5 21.1 9.4 22 10.5 22H13.5C14.6 22 15.5 21.1 15.5 20V18.5C15.5 17.85 15.96 17.06 16.7 16.5C18.7 15.05 20 12.68 20 10C20 5.58 16.42 2 12 2ZM11.5 6V11H12.5V6H11.5ZM10 9V10H14V9H10ZM10.5 20V19H13.5V20H10.5Z"/>
+                    </svg>
+                    <span>Подсказка хода</span>
+                    <span id="aiHintLock" style="margin-left: 6px; font-size: 13px;">🔒</span>
+                </button>
+
+                <button id="analyzeBtn" class="btn btn-primary" style="display: none;">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                        <path d="M12 2C6.5 2 2 6.5 2 12S6.5 22 12 22 22 17.5 22 12 17.5 2 12 2M12 4C14 4 15.6 5.6 15.6 7.6S14 11.2 12 11.2 8.4 9.6 8.4 7.6 10 4 12 4M12 20C9.3 20 6.9 18.6 5.6 16.4C5.6 14.3 9.9 13.1 12 13.1S18.4 14.3 18.4 16.4C17.1 18.6 14.7 20 12 20Z"/>
+                    </svg>
+                    Анализ партии
+                </button>
+            </div>
+        </section>
+
+        <!-- ПРАВАЯ КОЛОНКА: ИСТОРИЯ ИГР (КЛИКАБЕЛЬНАЯ!) -->
+        <section class="sidebar sidebar-right">
+            <div class="glass-panel" style="flex: 1; display: flex; flex-direction: column;">
+                <h2 class="panel-title">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                        <path d="M13 3a9 9 0 0 0-9 9H1l3.89 3.89.07.14L9 12H6a7 7 0 1 1 7 7 7.07 7.07 0 0 1-6-3h-2.1a9 9 0 1 0 14.1-8H13V3z"/>
+                    </svg>
+                    Последние игры
+                </h2>
+                <div id="historyList" class="history-list">
+                    <!-- Заполняется динамически -->
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- МОДАЛЬНОЕ ОКНО ЛОКАЛЬНОГО АИ-АНАЛИЗА -->
+    <div id="analysisModal" class="modal-overlay">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3 id="analysisModalTitle" class="modal-title">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2C6.5 2 2 6.5 2 12S6.5 22 12 22 22 17.5 22 12 17.5 2 12 2M12 4C14 4 15.6 5.6 15.6 7.6S14 11.2 12 11.2 8.4 9.6 8.4 7.6 10 4 12 4M12 20C9.3 20 6.9 18.6 5.6 16.4C5.6 14.3 9.9 13.1 12 13.1S18.4 14.3 18.4 16.4C17.1 18.6 14.7 20 12 20Z"/>
+                    </svg>
+                    ИИ-Разбор партии
+                </h3>
+                <button id="modalClose" class="modal-close" title="Закрыть">&times;</button>
+            </div>
+            <div class="modal-body">
+                
+                <!-- Карточки анализа игроков -->
+                <div class="analysis-players-grid">
+                    <div id="analysisP1" class="analysis-player-card p1">
+                        <!-- Динамические данные Игрока 1 -->
+                    </div>
+                    <div id="analysisP2" class="analysis-player-card p2">
+                        <!-- Динамические данные Игрока 2 -->
+                    </div>
+                </div>
+
+                <!-- Блок персональных рекомендаций -->
+                <div id="analysisRecs" class="analysis-recommendations">
+                    <!-- Заполняется динамически в ui.js -->
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- МОДАЛЬНОЕ ОКНО PRO-ФУНКЦИЙ -->
+    <div id="premiumModal" class="modal-overlay">
+        <div class="modal-container" style="max-width: 500px;">
+            <div class="modal-header" style="background: linear-gradient(135deg, var(--bg-secondary), rgba(212, 175, 55, 0.15)); border-bottom-color: rgba(212, 175, 55, 0.3);">
+                <h3 class="modal-title" style="color: #ffd700; text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);">
+                    👑 Улучшить до Connect 4 PRO
+                </h3>
+                <button id="premiumModalClose" class="modal-close" title="Закрыть">&times;</button>
+            </div>
+            <div class="modal-body" style="gap: 20px; align-items: center; text-align: center; padding: 30px 24px;">
+                <div style="font-size: 48px; filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.5));">👑</div>
+                
+                <h4 style="font-size: 18px; font-weight: 700;">Разблокируйте лучшие тактики ИИ</h4>
+                
+                <p style="font-size: 14px; color: var(--text-secondary); line-height: 1.6; max-width: 400px; margin-bottom: 0;">
+                    Вы пытались использовать <strong>"Подсказку хода"</strong>. Эта премиум-функция доступна только в PRO-версии игры и позволяет в реальном времени подсвечивать оптимальную колонку для совершения лучшего тактического хода по версии ИИ!
+                </p>
+
+                <div style="width: 100%; text-align: left; background: rgba(0, 0, 0, 0.2); padding: 16px; border-radius: var(--radius-md); border: 1px solid var(--card-border); display: flex; flex-direction: column; gap: 10px; margin: 10px 0;">
+                    <div style="display: flex; align-items: center; gap: 10px; font-size: 13px;">
+                        <span style="color: #ffd700; font-weight: bold;">✔</span>
+                        <span><strong>AI Move Hints:</strong> Подсвечивание лучшего хода на поле в реальном времени.</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px; font-size: 13px;">
+                        <span style="color: #ffd700; font-weight: bold;">✔</span>
+                        <span><strong>Безграничный анализ:</strong> Разбор партий любой длины в один клик.</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px; font-size: 13px;">
+                        <span style="color: #ffd700; font-weight: bold;">✔</span>
+                        <span><strong>Приоритетная тактика:</strong> Доступ к Hard AI (Минимакс) подсказкам.</span>
+                    </div>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 12px; width: 100%;">
+                    <button id="activateProDemoBtn" class="btn btn-primary" style="background: linear-gradient(135deg, #ffd700, #ffaa00); color: #000000; box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4); width: 100%; border: none;">
+                        Активировать демо Connect 4 PRO (Бесплатно)
+                    </button>
+                    <p style="font-size: 11px; color: var(--text-secondary); margin-bottom: 0;">
+                        *Активирует полнофункциональную демонстрацию PRO режима локально без оплаты.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ПОДВАЛ -->
+    <footer>
+        <p>&copy; 2026 Connect Four Premium. Разработано с локальным ИИ-Коучем. Все права защищены.</p>
+    </footer>
+
+    <!-- ПОДКЛЮЧЕНИЕ СЦЕНАРИЕВ -->
+    <script type="module">
+        import { Connect4UI } from './js/ui.js';
+        
+        window.addEventListener('DOMContentLoaded', () => {
+            // Инициализация интерфейса игры
+            new Connect4UI();
+        });
+    </script>
+</body>
+</html>
